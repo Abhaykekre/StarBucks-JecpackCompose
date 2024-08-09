@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,11 +50,13 @@ import com.example.starbucksjecpackcompose.starbucks.components.IconComponent
 import com.example.starbucksjecpackcompose.starbucks.components.LogoComponent
 import com.example.starbucksjecpackcompose.starbucks.data.Menu
 import com.example.starbucksjecpackcompose.starbucks.data.menuList
+import com.example.starbucksjecpackcompose.starbucks.navigation.product_detail
 import com.example.starbucksjecpackcompose.ui.theme.Background
 import com.example.starbucksjecpackcompose.ui.theme.DarkGray_1
 import com.example.starbucksjecpackcompose.ui.theme.DarkGreen
 import com.example.starbucksjecpackcompose.ui.theme.Gray_1
 import com.example.starbucksjecpackcompose.ui.theme.LightRed_1
+import com.example.starbucksjecpackcompose.ui.theme.Red
 import com.example.starbucksjecpackcompose.ui.theme.TextColor
 
 @Composable
@@ -87,7 +91,7 @@ fun HomeScreen(
                             background = DarkGreen,
                             modifier = Modifier
                                 .align(
-                                    Alignment.TopEnd
+                                    Alignment.TopEnd,
                                 )
                                 .size(55.dp)
                         )
@@ -100,7 +104,11 @@ fun HomeScreen(
 
                         }
                     }
+                    Popular {
+                        navHostController.navigate(product_detail)
+                    }
                 }
+
             }
         }
 
@@ -110,7 +118,7 @@ fun HomeScreen(
 
 
 @Composable
-private fun Popular() {
+private fun Popular(onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -128,28 +136,31 @@ private fun Popular() {
         }
         Spacer(modifier = Modifier.width(10.dp))
         LazyRow {
-
+            items(5) {
+                ItemEachRow {
+                    onClick()
+                }
+            }
         }
     }
 }
 
 @Composable
 fun ItemEachRow(onClick: () -> Unit) {
-
-    Card(
-        shape = RoundedCornerShape(14.dp),
+    var selected by rememberSaveable {
+        mutableStateOf(false)
+    }
+    Card(shape = RoundedCornerShape(14.dp),
         modifier = Modifier
             .width(220.dp)
             .padding(end = 10.dp)
-            .clickable { onClick() }
-    ) {
+            .clickable { onClick() }) {
 
         Column {
             Box(
                 modifier = Modifier
                     .background(
-                        LightRed_1,
-                        RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp)
+                        LightRed_1, RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp)
                     )
                     .fillMaxWidth()
                     .height(200.dp),
@@ -161,8 +172,35 @@ fun ItemEachRow(onClick: () -> Unit) {
                     modifier = Modifier.size(180.dp),
                 )
             }
-            Column (modifier = Modifier.padding(15.dp)){
-
+            Column(modifier = Modifier.padding(15.dp)) {
+                Text(
+                    text = stringResource(id = R.string.chocolate_cappuccino), style = TextStyle(
+                        color = TextColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.W500,
+                    )
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = stringResource(id = R.string._20_00), style = TextStyle(
+                            color = DarkGreen,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.W400,
+                        )
+                    )
+                    IconButton(
+                        onClick = {
+                            selected = !selected
+                        }, modifier = Modifier.size(24.dp)
+                    ) {
+                        IconComponent(
+                            icon = R.drawable.love, tint = if (selected) Red else Color.Unspecified
+                        )
+                    }
+                }
             }
         }
 
@@ -182,14 +220,10 @@ fun CustomChipScreen(
     TextButton(
         onClick = {
             onValueChange(menu.id)
-        },
-        shape = RoundedCornerShape(22.dp),
-        colors = ButtonDefaults.textButtonColors(
+        }, shape = RoundedCornerShape(22.dp), colors = ButtonDefaults.textButtonColors(
             containerColor = if (selected) DarkGreen else Gray_1,
             contentColor = if (selected) Color.White else TextColor
-        ),
-        contentPadding = PaddingValues(15.dp),
-        modifier = Modifier.padding(end = 10.dp)
+        ), contentPadding = PaddingValues(15.dp), modifier = Modifier.padding(end = 10.dp)
     ) {
         Text(
             text = menu.title, style = TextStyle(
@@ -205,16 +239,14 @@ fun CustomChipScreen(
 
 @Composable
 fun SearchBarScreen(
-    text: String,
-    onValueChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    text: String, onValueChange: (String) -> Unit, modifier: Modifier = Modifier
 ) {
 
-    TextField(
-        value = text, onValueChange = onValueChange, placeholder = {
+    TextField(value = text,
+        onValueChange = onValueChange,
+        placeholder = {
             Text(
-                text = stringResource(id = R.string.search),
-                style = TextStyle(
+                text = stringResource(id = R.string.search), style = TextStyle(
                     color = DarkGray_1,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W400,
@@ -241,13 +273,11 @@ fun SearchBarScreen(
 @Composable
 fun TextDescription() {
     Text(
-        text = stringResource(id = R.string.our_way_of_loving_you_back),
-        style = TextStyle(
+        text = stringResource(id = R.string.our_way_of_loving_you_back), style = TextStyle(
             fontSize = 25.sp,
             fontWeight = FontWeight.W600,
             color = Color.Black,
-        ),
-        modifier = Modifier.padding(vertical = 30.dp)
+        ), modifier = Modifier.padding(vertical = 30.dp)
     )
 }
 
